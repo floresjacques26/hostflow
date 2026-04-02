@@ -4,16 +4,23 @@
  * All rules are centralised in _computeMessages — easy to extend.
  */
 import { Link } from 'react-router-dom'
-import { Clock, Zap, AlertTriangle, XCircle, RefreshCw } from 'lucide-react'
+import { Clock, Zap, AlertTriangle, XCircle, RefreshCw, Rocket, Mail, Layout } from 'lucide-react'
 import useBilling from '../hooks/useBilling'
+import useOnboarding from '../hooks/useOnboarding'
+import { useEffect } from 'react'
 import clsx from 'clsx'
 
 export default function InAppMessages() {
   const { subscription, usage } = useBilling()
+  const { state, loaded, fetch } = useOnboarding()
+
+  useEffect(() => {
+    if (!loaded) fetch()
+  }, [loaded, fetch])
 
   if (!subscription || !usage) return null
 
-  const messages = _computeMessages(subscription, usage)
+  const messages = _computeMessages(subscription, usage, state)
   if (messages.length === 0) return null
 
   const msg = messages[0]
@@ -46,7 +53,7 @@ export default function InAppMessages() {
   )
 }
 
-function _computeMessages(subscription, usage) {
+function _computeMessages(subscription, usage, onboarding) {
   const msgs = []
 
   // ── Payment failed / past_due ─────────────────────────────────────
@@ -123,7 +130,7 @@ function _computeMessages(subscription, usage) {
     }
   }
 
-  // ── Trial just expired (subscription_status still "trialing" but trial_ends_at in the past) ──
+  // ── Trial just expired ────────────────────────────────────────────
   if (
     subscription.subscription_status === 'trialing' &&
     subscription.trial_ends_at &&
@@ -137,6 +144,49 @@ function _computeMessages(subscription, usage) {
       cta: { to: '/billing', label: 'Assinar agora' },
       priority: 12,
     })
+  }
+
+  // ── Onboarding nudges (only if onboarding not completed) ─────────────────
+  if (onboarding && !onboarding.completed) {
+    const step = onboarding.current_step
+
+    if (step === 0) {
+      // Never done anything — push to create property
+      msgs.push({
+        Icon: Rocket,
+        variant: 'info',
+        text: 'Comece cadastrando seu primeiro imóvel para personalizar suas respostas.',
+        cta: { to: '/properties', label: 'Cadastrar imóvel' },
+        priority: 3,
+      })
+    } else if (step === 1) {
+      // Has property — push to try AI
+      msgs.push({
+        Icon: Zap,
+        variant: 'info',
+        text: 'Imóvel cadastrado! Agora gere sua primeira resposta com IA.',
+        cta: { to: '/dashboard', label: 'Gerar resposta' },
+        priority: 3,
+      })
+    } else if (step === 2) {
+      // Used AI — push to connect inbox
+      msgs.push({
+        Icon: Mail,
+        variant: 'info',
+        text: 'Conecte o Gmail para receber mensagens de hóspedes automaticamente no Inbox.',
+        cta: { to: '/integrations', label: 'Conectar Gmail' },
+        priority: 3,
+      })
+    } else if (step === 3) {
+      // Connected integration — push to create template
+      msgs.push({
+        Icon: Layout,
+        variant: 'info',
+        text: 'Crie seu primeiro template para responder ainda mais rápido.',
+        cta: { to: '/templates', label: 'Criar template' },
+        priority: 3,
+      })
+    }
   }
 
   return msgs.sort((a, b) => b.priority - a.priority)
