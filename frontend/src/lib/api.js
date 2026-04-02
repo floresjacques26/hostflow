@@ -1,7 +1,10 @@
 import axios from 'axios'
 
+// In production (Vercel), VITE_API_URL must point to the Railway backend,
+// e.g. https://api.hostflow.com.br/api/v1
+// In development, falls back to '/api/v1' which is proxied by vite.config.js.
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: import.meta.env.VITE_API_URL || '/api/v1',
   headers: { 'Content-Type': 'application/json' },
 })
 
