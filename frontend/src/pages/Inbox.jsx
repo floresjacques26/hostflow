@@ -1141,6 +1141,30 @@ const STATUS_TABS = [
   { value: 'archived', label: 'Arquivadas' },
 ]
 
+function InboxEmptyState() {
+  return (
+    <div className="flex flex-col items-center text-center px-5 py-10">
+      <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center mb-4">
+        <Mail className="w-6 h-6 text-brand-300" />
+      </div>
+      <p className="font-semibold text-slate-700 mb-1">Inbox vazio</p>
+      <p className="text-xs text-slate-400 leading-relaxed mb-4">
+        Conecte o Gmail para receber mensagens de hóspedes automaticamente, ou crie uma conversa manual.
+      </p>
+      <a
+        href="/integrations"
+        className="btn-primary text-xs inline-flex items-center gap-1.5 mb-2"
+      >
+        <Mail className="w-3.5 h-3.5" />
+        Conectar Gmail
+      </a>
+      <p className="text-xs text-slate-400">
+        Ou clique em <span className="font-medium text-slate-600">Nova</span> para adicionar manualmente
+      </p>
+    </div>
+  )
+}
+
 export default function Inbox() {
   const [threads, setThreads] = useState([])
   const [selectedId, setSelectedId] = useState(null)
@@ -1450,15 +1474,14 @@ export default function Inbox() {
             {loading ? (
               <div className="text-center py-10 text-slate-400 text-sm">Carregando...</div>
             ) : threads.length === 0 ? (
-              <div className="px-4 py-8 text-center">
-                <InboxIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 mb-1">
-                  {debouncedSearch ? 'Nenhum resultado' : 'Nenhuma conversa'}
-                </p>
-                {!debouncedSearch && statusFilter === 'open' && (
-                  <p className="text-xs text-slate-400">Clique em "Nova" para começar</p>
-                )}
-              </div>
+              debouncedSearch ? (
+                <div className="px-4 py-8 text-center">
+                  <Search className="w-7 h-7 text-slate-300 mx-auto mb-2" />
+                  <p className="text-sm text-slate-500">Nenhum resultado para "{debouncedSearch}"</p>
+                </div>
+              ) : (
+                <InboxEmptyState />
+              )
             ) : (
               threads.map(thread => (
                 <ThreadCard
