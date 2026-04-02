@@ -1,0 +1,67 @@
+# ── Python ────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+backend/.venv/
+.venv/
+venv/
+env/
+
+# Type checking / linting caches
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Environment / Secrets ─────────────────────────────────────────────────────
+backend/.env
+.env
+*.env.local
+
+# ── Node.js / Frontend ────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+node_modules/
+
+# ── Local media uploads ───────────────────────────────────────────────────────
+backend/media/
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+# Shared settings (.vscode/settings.json, extensions.json) are kept in VCS.
+# User-specific and generated files are ignored.
+.vscode/launch.json
+.vscode/*.code-snippets
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+pgdata/
