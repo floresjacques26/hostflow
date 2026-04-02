@@ -25,7 +25,7 @@ const useOnboarding = create((set, get) => ({
   markStep: (stepKey) => {
     const { state } = get()
     if (!state) return
-    const STEP_MAP = { property: 1, ai_response: 2, calculator: 3 }
+    const STEP_MAP = { property: 1, ai_response: 2, integration: 3, template: 4 }
     const stepVal = STEP_MAP[stepKey]
     if (!stepVal) return
     const newStep = Math.max(state.current_step, stepVal)
@@ -34,7 +34,7 @@ const useOnboarding = create((set, get) => ({
       state: {
         ...state,
         current_step: newStep,
-        completed_count: state.steps.filter((s, i) => i < newStep).length,
+        completed_count: state.steps.filter((s) => s.step <= newStep).length,
         completed: newCompleted,
         steps: state.steps.map((s) => ({ ...s, done: s.step <= newStep })),
       },
