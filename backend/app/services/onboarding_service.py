@@ -3,22 +3,24 @@ Onboarding state machine.
 
 Steps:
   0 → not started
-  1 → created first property  (step 1 done)
-  2 → generated first AI response  (step 2 done)
-  3 → used calculator  (step 3 done = completed)
+  1 → created first property          (step 1 done)
+  2 → generated first AI response     (step 2 done)
+  3 → connected Gmail or WhatsApp     (step 3 done)
+  4 → created first custom template   (step 4 done = completed)
 """
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.services import event_service
 
-TOTAL_STEPS = 3
+TOTAL_STEPS = 4
 
 # Which step index each action completes
 STEP_MAP = {
-    "property":   1,
+    "property":    1,
     "ai_response": 2,
-    "calculator":  3,
+    "integration": 3,
+    "template":    4,
 }
 
 
@@ -65,7 +67,7 @@ def get_onboarding_state(user: User) -> dict:
             "key": "property",
             "step": 1,
             "title": "Cadastre seu primeiro imóvel",
-            "description": "Configure regras de check-in, check-out e preços.",
+            "description": "Configure check-in, check-out, preços e regras da casa.",
             "done": user.onboarding_step >= 1,
             "path": "/properties",
         },
@@ -73,17 +75,25 @@ def get_onboarding_state(user: User) -> dict:
             "key": "ai_response",
             "step": 2,
             "title": "Gere sua primeira resposta com IA",
-            "description": "Cole uma mensagem de hóspede e veja a mágica.",
+            "description": "Cole uma mensagem de hóspede e veja a IA responder.",
             "done": user.onboarding_step >= 2,
             "path": "/dashboard",
         },
         {
-            "key": "calculator",
+            "key": "integration",
             "step": 3,
-            "title": "Use a calculadora",
-            "description": "Calcule early check-in e late check-out em segundos.",
+            "title": "Conecte Gmail ou WhatsApp",
+            "description": "Receba mensagens automaticamente no inbox centralizado.",
             "done": user.onboarding_step >= 3,
-            "path": "/calculator",
+            "path": "/integrations",
+        },
+        {
+            "key": "template",
+            "step": 4,
+            "title": "Crie seu primeiro template",
+            "description": "Respostas prontas para as perguntas mais frequentes dos hóspedes.",
+            "done": user.onboarding_step >= 4,
+            "path": "/templates",
         },
     ]
     completed_count = sum(1 for s in steps if s["done"])
