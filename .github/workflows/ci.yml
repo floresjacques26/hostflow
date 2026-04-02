@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  # ── Backend ──────────────────────────────────────────────────────────────────
+  backend:
+    name: Backend — lint & type check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt
+
+      - name: Lint (ruff)
+        run: python -m ruff check backend/app
+
+      - name: Format check (ruff)
+        run: python -m ruff format --check backend/app
+
+      - name: Type check (mypy)
+        run: python -m mypy backend/app --ignore-missing-imports
+        # Non-blocking for now — remove `continue-on-error` once type coverage improves
+        continue-on-error: true
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend — build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build
+        working-directory: frontend
+        run: npm run build
+        env:
+          # Point to the production API — build must succeed with real URL
+          VITE_API_URL: https://api.hostflow.com.br/api/v1
+
+      - name: Lint (ESLint)
+        working-directory: frontend
+        run: npm run lint
+        # Non-blocking until lint is clean across the whole codebase
+        continue-on-error: true
+
+  # ── Docker build check ────────────────────────────────────────────────────────
+  docker:
+    name: Docker — build image
+    runs-on: ubuntu-latest
+    # Only run on pushes to main/staging (not every PR) to save CI minutes
+    if: github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t hostflow-backend:ci ./backend

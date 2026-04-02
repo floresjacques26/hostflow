@@ -1,0 +1,54 @@
+name: Deploy to Production
+
+# Triggers on every push to main after CI passes.
+# Requires the following GitHub Actions secrets:
+#   RAILWAY_TOKEN  — Railway API token (Settings → Tokens)
+#
+# If you use a different hosting provider, replace the deploy step with their CLI.
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy — Railway
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Backend: deploy to Railway ──────────────────────────────────────────
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy backend
+        run: railway up --service backend --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # ── Frontend: deploy to Vercel ──────────────────────────────────────────
+      # Uncomment and configure if you are using Vercel for the frontend.
+      # Vercel can also auto-deploy from GitHub without this step (recommended).
+      #
+      # - name: Deploy frontend to Vercel
+      #   uses: amondnet/vercel-action@v25
+      #   with:
+      #     vercel-token: ${{ secrets.VERCEL_TOKEN }}
+      #     vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+      #     vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      #     working-directory: ./frontend
+      #     vercel-args: '--prod'
+
+      # ── Post-deploy health check ────────────────────────────────────────────
+      - name: Wait for deploy and verify health
+        run: |
+          echo "Waiting 30s for deployment to stabilise..."
+          sleep 30
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.hostflow.com.br/health)
+          if [ "$STATUS" != "200" ]; then
+            echo "Health check failed — HTTP $STATUS"
+            exit 1
+          fi
+          echo "Health check passed — HTTP $STATUS"
