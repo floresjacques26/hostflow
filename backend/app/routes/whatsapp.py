@@ -38,6 +38,7 @@ from app.models.whatsapp import WhatsAppCredential
 from app.services import whatsapp_service, sse_service
 from app.services import media_service, wa_template_service
 from app.services.whatsapp_service import encrypt_wa_token, decrypt_wa_token
+from app.services.onboarding_service import advance_onboarding
 
 router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
 logger = logging.getLogger(__name__)
@@ -157,6 +158,7 @@ async def whatsapp_connect(
     await db.flush()
     cred.channel_id = channel.id
 
+    await advance_onboarding(current_user, "integration", db)
     await db.commit()
     await db.refresh(cred)
 

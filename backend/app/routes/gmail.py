@@ -33,6 +33,7 @@ from app.services.gmail_service import (
     GMAIL_SCOPES, encrypt_token, decrypt_token, _build_google_credentials,
 )
 from app.services import gmail_sync_service
+from app.services.onboarding_service import advance_onboarding
 
 router = APIRouter(prefix="/gmail", tags=["gmail"])
 logger = logging.getLogger(__name__)
@@ -220,6 +221,13 @@ async def gmail_callback(
         db=db,
     )
     await _ensure_gmail_channel(user_id, gmail_email, db)
+
+    # Advance onboarding: "integration" step
+    result = await db.execute(select(User).where(User.id == user_id))
+    user_obj = result.scalar_one_or_none()
+    if user_obj:
+        await advance_onboarding(user_obj, "integration", db)
+
     await db.commit()
 
     logger.info("Gmail connected for user %s (%s)", user_id, gmail_email)

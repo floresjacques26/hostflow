@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, func
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from app.core.database import get_db
@@ -15,6 +15,7 @@ from app.schemas.template import (
     TemplateSuggestion, ThreadTemplateSuggestions,
 )
 from app.services import template_match_service
+from app.services.onboarding_service import advance_onboarding
 
 router = APIRouter(prefix="/templates", tags=["templates"])
 
@@ -92,8 +93,21 @@ async def create_template(
     await _assert_property_owned(payload.property_id, current_user.id, db)
     _validate_smart_fields(payload)
 
+    # Check if this is the user's first custom (non-default) template
+    count_result = await db.execute(
+        select(func.count()).where(
+            Template.user_id == current_user.id,
+            Template.is_default == False,  # noqa: E712
+        )
+    )
+    is_first_template = count_result.scalar() == 0
+
     template = Template(**payload.model_dump(), user_id=current_user.id)
     db.add(template)
+
+    if is_first_template:
+        await advance_onboarding(current_user, "template", db)
+
     await db.commit()
     await db.refresh(template)
     return template
