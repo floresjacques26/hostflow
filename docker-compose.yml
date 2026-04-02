@@ -1,0 +1,84 @@
+version: "3.9"
+
+# ── HostFlow — Docker Compose ─────────────────────────────────────────────────
+#
+# Services:
+#   db       — PostgreSQL 16
+#   backend  — FastAPI (Python 3.12)
+#   frontend — Vite dev server (optional; comment out if running locally)
+#
+# Usage:
+#   # Database only (recommended for local dev — run backend/frontend natively):
+#   docker compose up db
+#
+#   # Full stack:
+#   docker compose up --build
+#
+# Before running:
+#   cp backend/.env.example backend/.env
+#   # Fill in secrets in backend/.env
+#
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hostflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hostflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ── Backend ─────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      # Override DB host to use the service name instead of localhost
+      DATABASE_URL: postgresql+asyncpg://postgres:${POSTGRES_PASSWORD:-password}@db:5432/hostflow
+      SCHEDULER_ENABLED: "true"
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount local media directory for development (only when STORAGE_PROVIDER=local)
+      - ./backend/media:/app/media
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Frontend (optional) ─────────────────────────────────────────────────────
+  # Comment this out if you prefer to run `npm run dev` locally.
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:8000/api/v1
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+    driver: local

@@ -1,0 +1,26 @@
+{
+  "recommendations": [
+    // ── Python ────────────────────────────────────────────────────────────────
+    "ms-python.python",              // Python language support + IntelliSense
+    "ms-python.vscode-pylance",      // Fast type checking + autocomplete
+    "charliermarsh.ruff",            // Linter + formatter (replaces black/flake8/isort)
+
+    // ── Frontend ──────────────────────────────────────────────────────────────
+    "dbaeumer.vscode-eslint",        // ESLint for JS/JSX
+    "esbenp.prettier-vscode",        // Prettier formatter
+    "bradlc.vscode-tailwindcss",     // Tailwind CSS IntelliSense
+    "dsznajder.es7-react-js-snippets", // React snippets
+
+    // ── Database ──────────────────────────────────────────────────────────────
+    "cweijan.vscode-postgresql-client2", // PostgreSQL client
+
+    // ── Environment / config ──────────────────────────────────────────────────
+    "mikestead.dotenv",              // .env syntax highlighting
+    "redhat.vscode-yaml",            // YAML support (docker-compose, etc.)
+
+    // ── Productivity ──────────────────────────────────────────────────────────
+    "eamodio.gitlens",               // Git history and blame
+    "streetsidesoftware.code-spell-checker", // Spell check
+    "christian-kohler.path-intellisense"  // Path autocomplete
+  ]
+}
