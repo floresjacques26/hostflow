@@ -132,7 +132,7 @@ export default function Dashboard() {
     () => new Set(JSON.parse(localStorage.getItem('hf_testimonial_shown') || '[]'))
   )
   const { usage, refreshUsage } = useBilling()
-  const { markStep } = useOnboarding()
+  const { state: onboardingState, markStep } = useOnboarding()
   const responseRef = useRef(null)
 
   useEffect(() => {
@@ -240,6 +240,27 @@ export default function Dashboard() {
         </div>
 
         <InAppMessages />
+
+        {/* First-value moment: nudge brand-new users to set up a property */}
+        {onboardingState && onboardingState.current_step === 0 && !onboardingState.completed && (
+          <div className="card p-5 mb-5 border-brand-100 bg-gradient-to-r from-brand-50 to-white">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 bg-brand-100 rounded-xl flex items-center justify-center shrink-0">
+                <Zap className="w-5 h-5 text-brand-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-slate-800 mb-1">Bem-vindo ao HostFlow!</p>
+                <p className="text-sm text-slate-500 mb-3">
+                  Cadastre seu primeiro imóvel e cole uma mensagem de hóspede abaixo — a IA responde em segundos.
+                </p>
+                <a href="/properties" className="btn-primary text-sm inline-flex items-center gap-2">
+                  <Building2 className="w-4 h-4" />
+                  Cadastrar meu imóvel
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Value stats */}
         {stats && (
