@@ -19,5 +19,5 @@ class EmailLog(Base):
     provider: Mapped[str] = mapped_column(String(40), default="logging")
     status: Mapped[str] = mapped_column(String(20), default="sent")   # sent | failed | skipped
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    email_data: Mapped[Optional[dict]] = mapped_column(JSON, name="metadata", nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)

@@ -107,8 +107,9 @@ async def create_checkout(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if not settings.stripe_secret_key:
-        raise HTTPException(status_code=503, detail="Billing não configurado")
+    _sk = settings.stripe_secret_key
+    if not _sk or not _sk.startswith(("sk_test_", "sk_live_")) or len(_sk) < 30:
+        raise HTTPException(status_code=503, detail="Stripe não configurado — adicione STRIPE_SECRET_KEY válida no .env")
 
     price_to_plan = {
         settings.stripe_price_pro_monthly: "pro",
@@ -170,7 +171,7 @@ async def start_trial(
         raise HTTPException(status_code=400, detail="Você já utilizou ou tem uma assinatura ativa")
 
     trial_days = PLANS["pro"].trial_days
-    trial_end = datetime.now(timezone.utc) + timedelta(days=trial_days)
+    trial_end = datetime.utcnow() + timedelta(days=trial_days)
 
     current_user.plan = "pro"
     current_user.subscription_status = "trialing"

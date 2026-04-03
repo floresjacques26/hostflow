@@ -147,7 +147,7 @@ async def _process_inbound(msg) -> None:
             thread = await _get_or_create_thread(msg, cred, db)
 
             # ── Create inbound entry ──────────────────────────────────────────
-            now = datetime.now(timezone.utc)
+            now = datetime.utcnow()
             entry = MessageEntry(
                 thread_id=thread.id,
                 direction="inbound",
@@ -264,7 +264,7 @@ async def _get_or_create_thread(msg, cred: WhatsAppCredential, db: AsyncSession)
         ch_result = await db.execute(select(Channel).where(Channel.id == cred.channel_id))
         channel = ch_result.scalar_one_or_none()
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     thread = MessageThread(
         user_id=cred.user_id,
         channel_id=cred.channel_id,
@@ -318,7 +318,7 @@ async def _bg_draft(thread_id: int, user_id: int) -> None:
         from sqlalchemy.orm import selectinload as sil
         result = await db.execute(
             select(MessageThread)
-            .options(sil(MessageThread.entries), sil(MessageThread.property))
+            .options(sil(MessageThread.entries), sil(MessageThread.related_property))
             .where(MessageThread.id == thread_id, MessageThread.user_id == user_id)
         )
         thread = result.scalar_one_or_none()

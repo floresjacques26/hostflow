@@ -39,7 +39,7 @@ async def track(
         event = UserEvent(
             user_id=user.id,
             event_name=event_name,
-            metadata=metadata,
+            event_data=metadata,
         )
         db.add(event)
         # We do NOT commit here — caller owns the transaction boundary

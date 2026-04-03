@@ -35,7 +35,7 @@ async def advance_onboarding(user: User, action: str, db: AsyncSession) -> bool:
 
     # Start onboarding on first action if not already started
     if user.onboarding_step == 0 and user.onboarding_started_at is None:
-        user.onboarding_started_at = datetime.now(timezone.utc)
+        user.onboarding_started_at = datetime.utcnow()
         await event_service.track(user, event_service.ONBOARDING_STARTED, db)
 
     # Only advance forward (never backwards)
@@ -45,7 +45,7 @@ async def advance_onboarding(user: User, action: str, db: AsyncSession) -> bool:
     just_completed = user.onboarding_step >= TOTAL_STEPS and not user.onboarding_completed
     if just_completed:
         user.onboarding_completed = True
-        user.onboarding_completed_at = datetime.now(timezone.utc)
+        user.onboarding_completed_at = datetime.utcnow()
         await event_service.track(user, event_service.ONBOARDING_COMPLETED, db)
 
     return just_completed

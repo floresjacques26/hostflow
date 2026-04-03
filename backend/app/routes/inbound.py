@@ -53,7 +53,7 @@ async def _process_inbound_email(thread_id: int, user_id: int) -> None:
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(MessageThread)
-            .options(selectinload(MessageThread.entries), selectinload(MessageThread.property))
+            .options(selectinload(MessageThread.entries), selectinload(MessageThread.related_property))
             .where(MessageThread.id == thread_id, MessageThread.user_id == user_id)
         )
         thread = result.scalar_one_or_none()
@@ -104,7 +104,7 @@ async def receive_email(
         # Find or create the email_forward channel
         channel = await _find_or_create_email_channel(user, db)
 
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
 
         # Create thread
         thread = MessageThread(

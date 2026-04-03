@@ -91,7 +91,7 @@ async def login(payload: UserLogin, db: AsyncSession = Depends(get_db)):
             detail="E-mail ou senha incorretos",
         )
 
-    user.last_login_at = datetime.now(timezone.utc)
+    user.last_login_at = datetime.utcnow()
     await event_service.track(user, event_service.LOGIN, db)
     await db.commit()
 

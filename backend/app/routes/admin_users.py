@@ -260,7 +260,7 @@ async def get_user_detail(
             EventItem(
                 event_name=e.event_name,
                 created_at=e.created_at,
-                metadata=e.metadata,
+                metadata=e.event_data,
             )
             for e in recent_events
         ],

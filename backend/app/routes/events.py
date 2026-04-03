@@ -84,7 +84,7 @@ async def track_event(
             db.add(UserEvent(
                 user_id=current_user.id,
                 event_name=payload.name,
-                metadata=props or None,
+                event_data=props or None,
             ))
             await db.commit()
 

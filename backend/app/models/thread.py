@@ -70,7 +70,7 @@ class MessageThread(Base):
     last_synced_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
 
     user: Mapped["User"] = relationship("User", foreign_keys=[user_id])
-    property: Mapped[Optional["Property"]] = relationship("Property", foreign_keys=[property_id])
+    related_property: Mapped[Optional["Property"]] = relationship("Property", foreign_keys=[property_id])
     channel: Mapped[Optional["Channel"]] = relationship("Channel", back_populates="threads", foreign_keys=[channel_id])
     guest_profile: Mapped[Optional["GuestProfile"]] = relationship(
         "GuestProfile", back_populates="threads", foreign_keys=[guest_profile_id]

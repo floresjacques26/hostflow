@@ -115,7 +115,7 @@ async def whatsapp_connect(
             detail="Este phone_number_id já está conectado a outra conta HostFlow.",
         )
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     encrypted = encrypt_wa_token(payload.access_token)
 
     # Find existing credential (upsert)
@@ -353,7 +353,7 @@ async def send_whatsapp_reply(
         )
 
     # Send via provider
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     delivery_status = "sent"
     wamid: str | None = None
 
@@ -484,7 +484,7 @@ async def create_wa_template(
     db: AsyncSession = Depends(get_db),
 ):
     """Save a WhatsApp message template record."""
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     t = WhatsAppMessageTemplate(
         user_id=current_user.id,
         provider_template_name=payload.provider_template_name,
@@ -568,7 +568,7 @@ async def send_wa_template(
     if not cred:
         raise HTTPException(status_code=400, detail="WhatsApp não configurado")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     delivery_status = "sent"
     wamid: str | None = None
 

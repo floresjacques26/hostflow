@@ -129,7 +129,7 @@ async def generate_draft(
         db.add(entry)
 
         # ── Step 6: Update thread state ───────────────────────────────────────
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         thread.draft_status = "draft_generated"
         thread.last_message_at = now
         thread.updated_at = now

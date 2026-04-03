@@ -124,7 +124,7 @@ async def update_guest(
         profile.name = payload.name
     if payload.notes is not None:
         profile.notes = payload.notes
-    profile.updated_at = datetime.now(timezone.utc)
+    profile.updated_at = datetime.utcnow()
 
     await db.commit()
     await db.refresh(profile)

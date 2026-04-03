@@ -136,7 +136,7 @@ async def update_rule(
 
     for field, value in payload.model_dump(exclude_unset=True).items():
         setattr(rule, field, value)
-    rule.updated_at = datetime.now(timezone.utc)
+    rule.updated_at = datetime.utcnow()
     await db.commit()
     await db.refresh(rule)
     return rule

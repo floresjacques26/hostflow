@@ -70,7 +70,7 @@ async def find_or_create_profile(
             # Enrich existing profile with name if we now have it
             if guest_name and not profile.name:
                 profile.name = guest_name
-                profile.updated_at = datetime.now(timezone.utc)
+                profile.updated_at = datetime.utcnow()
             return profile
 
         # Create new profile

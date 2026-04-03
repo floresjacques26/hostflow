@@ -91,8 +91,8 @@ async def _send(
         subject=subject,
         provider=type(provider).__name__,
         status="sent" if success else "failed",
-        sent_at=datetime.now(timezone.utc) if success else None,
-        metadata={"user_name": user.name},
+        sent_at=datetime.utcnow() if success else None,
+        email_data={"user_name": user.name},
     )
     db.add(log)
     await db.commit()

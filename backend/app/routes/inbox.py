@@ -39,7 +39,7 @@ async def _load_thread(thread_id: int, user_id: int, db: AsyncSession) -> Messag
         select(MessageThread)
         .options(
             selectinload(MessageThread.entries).selectinload(MessageEntry.attachments),
-            selectinload(MessageThread.property),
+            selectinload(MessageThread.related_property),
             selectinload(MessageThread.channel),
         )
         .where(MessageThread.id == thread_id, MessageThread.user_id == user_id)
@@ -77,7 +77,7 @@ async def _bg_draft_and_notify(thread_id: int, user_id: int) -> None:
     async with AsyncSessionLocal() as db:
         result = await db.execute(
             select(MessageThread)
-            .options(selectinload(MessageThread.entries), selectinload(MessageThread.property))
+            .options(selectinload(MessageThread.entries), selectinload(MessageThread.related_property))
             .where(MessageThread.id == thread_id, MessageThread.user_id == user_id)
         )
         thread = result.scalar_one_or_none()
@@ -133,7 +133,7 @@ async def _bg_auto_send(
     from sqlalchemy import select as _select
     from app.models.gmail import GmailCredential as _GmailCred
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     if thread.source_type == "gmail" and thread.external_thread_id:
         cred_result = await db.execute(
@@ -224,7 +224,7 @@ async def list_threads(
 ):
     query = (
         select(MessageThread)
-        .options(selectinload(MessageThread.property), selectinload(MessageThread.channel))
+        .options(selectinload(MessageThread.related_property), selectinload(MessageThread.channel))
         .where(MessageThread.user_id == current_user.id)
     )
 
@@ -275,7 +275,7 @@ async def create_thread(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     # Auto-match or create guest profile
     profile = await guest_service.find_or_create_profile(
@@ -343,7 +343,7 @@ async def update_thread(
 ):
     result = await db.execute(
         select(MessageThread)
-        .options(selectinload(MessageThread.property), selectinload(MessageThread.channel))
+        .options(selectinload(MessageThread.related_property), selectinload(MessageThread.channel))
         .where(MessageThread.id == thread_id, MessageThread.user_id == current_user.id)
     )
     thread = result.scalar_one_or_none()
@@ -375,7 +375,7 @@ async def bulk_action(
     db: AsyncSession = Depends(get_db),
 ):
     new_status = _BULK_STATUS_MAP[payload.action]
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
 
     result = await db.execute(
         select(MessageThread).where(
@@ -418,7 +418,7 @@ async def add_entry(
     if not thread:
         raise HTTPException(status_code=404, detail="Conversa não encontrada")
 
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     entry = MessageEntry(
         thread_id=thread.id,
         direction=payload.direction,
@@ -560,7 +560,7 @@ async def send_gmail_reply(
         raise HTTPException(status_code=400, detail="Endereço de destino do hóspede não encontrado.")
 
     # Send via Gmail API
-    now = datetime.now(timezone.utc)
+    now = datetime.utcnow()
     delivery_status = "sent"
     sent_message_id: str | None = None
 

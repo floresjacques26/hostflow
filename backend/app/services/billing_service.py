@@ -77,7 +77,7 @@ async def create_portal_session(user: User, return_url: str, db: AsyncSession) -
 def _ts_to_dt(ts: int | None) -> datetime | None:
     if ts is None:
         return None
-    return datetime.fromtimestamp(ts, tz=timezone.utc)
+    return datetime.utcfromtimestamp(ts)
 
 
 async def sync_subscription(sub: stripe.Subscription, db: AsyncSession) -> None:
@@ -120,6 +120,6 @@ async def handle_subscription_deleted(sub: stripe.Subscription, db: AsyncSession
     user.stripe_subscription_id = None
     user.stripe_price_id = None
     user.current_period_end = _ts_to_dt(sub.get("current_period_end"))
-    user.canceled_at = _ts_to_dt(sub.get("canceled_at")) or datetime.now(timezone.utc)
+    user.canceled_at = _ts_to_dt(sub.get("canceled_at")) or datetime.utcnow()
     await db.commit()
     logger.info("subscription deleted for user %s, reverted to free", user.id)

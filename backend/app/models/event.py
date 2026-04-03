@@ -15,7 +15,7 @@ class UserEvent(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     event_name: Mapped[str] = mapped_column(String(80), index=True)
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    event_data: Mapped[Optional[dict]] = mapped_column(JSON, name="metadata", nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
 
     user: Mapped["User"] = relationship(back_populates="events")

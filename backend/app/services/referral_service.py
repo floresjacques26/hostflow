@@ -98,10 +98,10 @@ async def maybe_reward_referrer(referred_user: User, db: AsyncSession) -> None:
             return
 
         # Extend trial for referrer
-        now = datetime.now(timezone.utc)
+        now = datetime.utcnow()
         base = (
-            referrer.trial_ends_at.replace(tzinfo=timezone.utc)
-            if referrer.trial_ends_at and referrer.trial_ends_at.replace(tzinfo=timezone.utc) > now
+            referrer.trial_ends_at
+            if referrer.trial_ends_at and referrer.trial_ends_at > now
             else now
         )
         referrer.trial_ends_at = base + timedelta(days=REWARD_TRIAL_DAYS)

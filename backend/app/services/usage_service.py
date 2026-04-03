@@ -34,7 +34,7 @@ async def increment_ai_response(user_id: int, db: AsyncSession) -> int:
         .values(user_id=user_id, month=month, ai_responses=1)
         .on_conflict_do_update(
             constraint="uq_usage_user_month",
-            set_={"ai_responses": UsageCounter.ai_responses + 1, "updated_at": datetime.now(timezone.utc)},
+            set_={"ai_responses": UsageCounter.ai_responses + 1, "updated_at": datetime.utcnow()},
         )
         .returning(UsageCounter.ai_responses)
     )
